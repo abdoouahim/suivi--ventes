@@ -2,10 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Stock Manager Pro - Final</title>
+<title>Stock Manager Pro - No Login</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -31,18 +30,9 @@ th{background:#2c3e50;color:white}
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginBox" class="container">
-    <h2>🔐 Login</h2>
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <button class="btn" onclick="login()">Login</button>
-</div>
+<div class="container">
 
-<!-- APP -->
-<div id="app" class="container" style="display:none">
-
-<h2>📦 Stock Manager Pro</h2>
+<h2>📦 Stock Manager Pro (No Login)</h2>
 
 <!-- ALERTS -->
 <div class="card">
@@ -99,24 +89,14 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const auth = firebase.auth();
 
 let products = [];
 let sales = [];
 let chart;
 
-// LOGIN
-function login(){
-    auth.signInWithEmailAndPassword(email.value,password.value)
-    .then(()=>{
-        loginBox.style.display="none";
-        app.style.display="block";
-        init();
-    })
-    .catch(e=>alert(e.message));
-}
+// INIT AUTO (NO LOGIN)
+init();
 
-// INIT
 function init(){
 
 db.ref("products").on("value",s=>{
@@ -160,7 +140,7 @@ db.ref("sales").push(sale);
 // RENDER
 function render(){
 
-// STOCK
+// STOCK + ALERTS
 let stockHTML = "<tr><th>Produit</th><th>Stock</th></tr>";
 let alertsHTML = "";
 
