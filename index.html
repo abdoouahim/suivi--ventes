@@ -344,24 +344,41 @@
 
     document.getElementById('saleDate').valueAsDate = new Date();
 
+    // تم تعديل هذه الدالة لفصل المنتجات عن المبيعات بشكل كامل لمنع التداخل والتعليق
     function initializeDatabaseSync() {
-        db.ref().on('value', (snapshot) => {
-            if (!isAccessGranted) return;
-            
+        if (!isAccessGranted) return;
+
+        // 1. الاستماع للمنتجات فقط
+        db.ref('products').on('value', (snapshot) => {
             const data = snapshot.val();
-            
             if (data) {
-                products = data.products || [...defaultProducts];
-                sales = data.sales ? Object.keys(data.sales).map(key => ({...data.sales[key], firebaseKey: key})) : [];
+                products = data;
             } else {
                 products = [...defaultProducts];
-                sales = [];
-                saveToFirebase();
+                db.ref('products').set(products);
             }
-
-            document.getElementById('loadingOverlay').style.display = 'none';
-            updateDashboardView();
+            checkLoadingState();
         });
+
+        // 2. الاستماع للمبيعات فقط بشكل منفصل تماماً
+        db.ref('sales').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                sales = Object.keys(data).map(key => ({...data[key], firebaseKey: key}));
+            } else {
+                sales = []; // إذا مسحت من الفايربيس تصبح المصفوفة فارغة فوراً وتتحدث الواجهة
+            }
+            checkLoadingState();
+        });
+    }
+
+    let checkCount = 0;
+    function checkLoadingState() {
+        checkCount++;
+        if (checkCount >= 2) { // التأكد من تحميل المنتجات والمبيعات معاً لأول مرة
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        updateDashboardView();
     }
 
     function saveToFirebase() {
@@ -496,14 +513,15 @@
         }
     }
 
-    // هنا تكمن التعديلات الأساسية لحل مشكلة الحذف الكامل وإعادة التعيين التلقائي
+    // الدالة النهائية بعد حل مشكلة التداخل بشكل كامل
     function resetInventoryToDefault() {
         if(confirm("Êtes-vous sûr de vouloir réinitialiser le stock aux valeurs initiales et supprimer TOUTES les ventes ?")) {
             products = JSON.parse(JSON.stringify(defaultProducts));
-            sales = []; // تصفير مصفوفة المبيعات محلياً لمنع تعليقها بالواجهة
+            sales = []; 
             
+            // تحديث المنتجات وحذف عقدة المبيعات تماماً
             db.ref('products').set(products);
-            db.ref('sales').set(null) // استخدام set(null) يضمن المسح المباشر والسريع للعقدة من Firebase
+            db.ref('sales').remove() 
                 .then(() => {
                     alert("Le stock a été réinitialisé et l'historique des ventes a été vidé ! 🎉");
                 })
