@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Ventes & Stock</title>
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -35,10 +36,8 @@
         h1, h2, h3 {
             text-align: center;
             color: var(--primary-color);
-            margin-bottom: 20px;
         }
 
-        /* Tableau de bord - Statistiques */
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -53,12 +52,16 @@
             color: white;
             font-weight: bold;
         }
+
         .stat-ca { background-color: var(--accent-color); }
         .stat-cost { background-color: #7f8c8d; }
         .stat-profit { background-color: var(--success-color); }
-        .stat-box div { font-size: 24px; margin-top: 5px; }
 
-        /* Disposition de l'application */
+        .stat-box div {
+            font-size: 24px;
+            margin-top: 5px;
+        }
+
         .main-layout {
             display: grid;
             grid-template-columns: 38% 62%;
@@ -66,7 +69,9 @@
         }
 
         @media (max-width: 950px) {
-            .main-layout { grid-template-columns: 1fr; }
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
         }
 
         .card {
@@ -74,7 +79,6 @@
             border: 1px solid #e2e8f0;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
             margin-bottom: 20px;
         }
 
@@ -86,7 +90,6 @@
             display: block;
             margin-bottom: 6px;
             font-weight: 600;
-            font-size: 14px;
         }
 
         input, select {
@@ -95,7 +98,6 @@
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             box-sizing: border-box;
-            font-size: 15px;
         }
 
         button {
@@ -107,28 +109,31 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
-        .btn-success { background-color: var(--success-color); }
-        .btn-success:hover { background-color: #219150; }
-        .btn-primary { background-color: var(--accent-color); }
-        .btn-primary:hover { background-color: #1a6699; }
-        .btn-reset { background-color: #95a5a6; padding: 5px 10px; font-size: 12px; width: auto; margin-top: 5px; display: inline-block;}
-        .btn-backup { background-color: var(--warning-color); margin-bottom: 10px; }
-        .btn-backup:hover { background-color: #d35400; }
-        .btn-restore { background-color: #8e44ad; }
-        .btn-restore:hover { background-color: #732d91; }
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+        }
+
+        .btn-reset {
+            background-color: #95a5a6;
+            padding: 6px 10px;
+            width: auto;
+            margin-top: 10px;
+        }
 
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 13px;
         }
 
         th, td {
-            padding: 10px 6px;
+            padding: 10px;
             text-align: center;
             border-bottom: 1px solid #e2e8f0;
         }
@@ -138,15 +143,10 @@
             color: white;
         }
 
-        tr:hover { background-color: #f8fafc; }
-
         .delete-btn {
             background-color: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 6px 10px;
+            font-size: 13px;
         }
 
         .badge {
@@ -155,428 +155,497 @@
             font-size: 12px;
             font-weight: bold;
         }
-        .badge-danger { background-color: #fde8e8; color: #c81e1e; }
-        .badge-success { background-color: #def7ec; color: #03543f; }
-        .badge-warning { background-color: #fef08a; color: #854d0e; }
 
-        .backup-section {
-            background-color: #f1f5f9;
-            border: 2px dashed #cbd5e1;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
+        .badge-danger {
+            background-color: #fde8e8;
+            color: #c81e1e;
         }
-        
+
+        .badge-success {
+            background-color: #def7ec;
+            color: #03543f;
+        }
+
+        .badge-warning {
+            background-color: #fef08a;
+            color: #854d0e;
+        }
+
         #loadingOverlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(255,255,255,0.95);
-            display: flex; justify-content: center; align-items: center;
-            font-size: 20px; font-weight: bold;
-            color: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
             z-index: 9999;
         }
     </style>
 </head>
+
 <body>
 
-<div id="loadingOverlay">Veuillez patienter...</div>
+<div id="loadingOverlay">
+    Chargement...
+</div>
 
-<div id="mainApp" style="display: none;">
+<div id="mainApp" style="display:none;">
+
     <div class="container">
+
         <h1>Système du Suivi des Ventes & Gestion de Stock</h1>
 
         <div class="dashboard-stats">
+
             <div class="stat-box stat-ca">
-                Chiffre d'Affaires (CA)
+                Chiffre d'Affaires
                 <div id="totalCA">0.00</div>
             </div>
+
             <div class="stat-box stat-cost">
-                Coût de Revient Total
+                Coût Total
                 <div id="totalCost">0.00</div>
             </div>
+
             <div class="stat-box stat-profit">
-                Bénéfice Net
+                Bénéfice
                 <div id="totalProfit">0.00</div>
             </div>
+
         </div>
 
         <div class="main-layout">
 
+            <!-- LEFT -->
             <div>
+
                 <div class="card">
-                    <h3>Enregistrer une Nouvelle Vente</h3>
+
+                    <h3>Nouvelle Vente</h3>
+
                     <form id="salesForm">
+
                         <div class="form-group">
-                            <label for="saleDate">Date de Vente :</label>
+                            <label>Date :</label>
                             <input type="date" id="saleDate" required>
                         </div>
+
                         <div class="form-group">
-                            <label for="saleProductSelect">Sélectionner l'article :</label>
+                            <label>Produit :</label>
                             <select id="saleProductSelect" required onchange="handleProductChange()">
-                                <option value="">-- Choisir un produit disponible --</option>
+                                <option value="">Choisir un produit</option>
                             </select>
                         </div>
+
                         <div class="form-group">
-                            <label for="costPrice">Coût de Revient Unitaire (PU - Auto) :</label>
-                            <input type="number" id="costPrice" min="0" step="0.01" placeholder="Sélectionnez un produit" readonly style="background-color: #e2e8f0; font-weight: bold;">
+                            <label>Prix d'achat :</label>
+                            <input type="number" id="costPrice" readonly>
                         </div>
+
                         <div class="form-group">
-                            <label for="salePrice">Prix de Vente Unitaire Réel :</label>
-                            <input type="number" id="salePrice" min="0" step="0.01" placeholder="Prix vendu aujourd'hui" required>
+                            <label>Prix de vente :</label>
+                            <input type="number" id="salePrice" required>
                         </div>
+
                         <div class="form-group">
-                            <label for="saleQty">Quantité Vendue (Q) :</label>
-                            <input type="number" id="saleQty" min="1" placeholder="Nombre de pièces vendues" required>
+                            <label>Quantité :</label>
+                            <input type="number" id="saleQty" required>
                         </div>
-                        <button type="submit" class="btn-success">Valider la vente et déduire du stock</button>
+
+                        <button type="submit" class="btn-success">
+                            Ajouter Vente
+                        </button>
+
                     </form>
+
                 </div>
 
-                <div class="card" style="overflow-x: auto;">
-                    <h3>État Actuel du Stock (Q & PU)</h3>
+                <div class="card">
+
+                    <h3>Stock</h3>
+
                     <table id="inventoryTable">
+
                         <thead>
                             <tr>
-                                <th>Article / Marque</th>
-                                <th>Prix d'achat (PU)</th>
-                                <th>Disponible (Q)</th>
+                                <th>Produit</th>
+                                <th>PU</th>
+                                <th>Stock</th>
                             </tr>
                         </thead>
+
                         <tbody></tbody>
+
                     </table>
-                    <center><button class="btn-reset" onclick="resetInventoryToDefault()">Réinitialiser au Stock Initial</button></center>
+
+                    <center>
+                        <button class="btn-reset" onclick="resetInventoryToDefault()">
+                            Réinitialiser
+                        </button>
+                    </center>
+
                 </div>
 
-                <div class="card backup-section">
-                    <h3>Centre de Sauvegarde des Données</h3>
-                    <p style="font-size: 13px; color: #64748b; margin-top: -10px; text-align: center;">Téléchargez régulièrement une copie pour éviter toute perte de données.</p>
-                    <button class="btn-backup" onclick="exportDataBackup()">📥 Télécharger Sauvegarde (Fichier JSON)</button>
-
-                    <div style="margin-top: 15px; border-top: 1px solid #cbd5e1; padding-top: 10px;">
-                        <label style="margin-bottom: 8px;"><b>Restaurer depuis une sauvegarde précédente :</b></label>
-                        <input type="file" id="importFile" accept=".json" style="padding: 5px; font-size: 13px; margin-bottom: 8px;">
-                        <button class="btn-restore" onclick="importDataBackup()">📤 Restaurer les Données</button>
-                    </div>
-                </div>
             </div>
 
+            <!-- RIGHT -->
             <div>
-                <div class="card" style="overflow-x: auto; min-height: 550px;">
-                    <h3>Historique Détaillé des Ventes Journalières</h3>
+
+                <div class="card">
+
+                    <h3>Historique des Ventes</h3>
+
                     <table id="salesTable">
+
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Nom du Produit</th>
-                                <th>Quantité</th>
-                                <th>Coût Total</th>
-                                <th>Vente Totale (CA)</th>
-                                <th>Bénéfice Net</th>
+                                <th>Produit</th>
+                                <th>Q</th>
+                                <th>Coût</th>
+                                <th>CA</th>
+                                <th>Profit</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
+
                         <tbody></tbody>
+
                     </table>
+
                 </div>
+
             </div>
 
         </div>
+
     </div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAn3cl74J4CY7Qzb8tF_KlercWOs0BGSBc",
-        authDomain: "stock-166df.firebaseapp.com",
-        databaseURL: "https://stock-166df-default-rtdb.firebaseio.com",
-        projectId: "stock-166df",
-        storageBucket: "stock-166df.appspot.com",
-        messagingSenderId: "1071318301341",
-        appId: "1:1071318301341:web:e1a512beec2a20cf3274"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+const firebaseConfig = {
 
-    const defaultProducts = [
-        { id: "1", name: 'sneakers midium quality', qty: 24, pu: 75 },
-        { id: "2", name: 'sneakers Low quality', qty: 20, pu: 62 },
-        { id: "3", name: 'sandals " NIKE "', qty: 30, pu: 38 },
-        { id: "4", name: 'sandals girl (1)', qty: 24, pu: 16 },
-        { id: "5", name: 'sandals girl (2)', qty: 24, pu: 16 },
-        { id: "6", name: 'flip-flops "easy to go"', qty: 24, pu: 45 },
-        { id: "7", name: 'sneakers for kids', qty: 9, pu: 65 },
-        { id: "8", name: 'sandals " LOULUEN "', qty: 24, pu: 80 },
-        { id: "9", name: 'sandals " MIKA R&B "', qty: 10, pu: 40 },
-        { id: "10", name: 'SABO for Men', qty: 24, pu: 30 },
-        { id: "11", name: 'Sabo for girls', qty: 30, pu: 24 },
-        { id: "12", name: 'sandals " BZIM Mtarzin"', qty: 24, pu: 50 },
-        { id: "13", name: 'sandals " Jeld "', qty: 24, pu: 95 },
-        { id: "14", name: 'flip-flops " LOULUEN "', qty: 24, pu: 45 },
-        { id: "15", name: 'sandals " Black Gold Brown "', qty: 10, pu: 45 },
-        { id: "16", name: 'Sandals Free style', qty: 24, pu: 60 },
-        { id: "17", name: 'Sandals Proof', qty: 20, pu: 63 }
-    ];
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_DOMAIN",
+    databaseURL: "YOUR_DB_URL",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
 
-    let products = [];
-    let sales = [];
-    let isAccessGranted = false;
+};
 
-    window.addEventListener('DOMContentLoaded', () => {
-        checkAccessCode();
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+
+const defaultProducts = [
+
+    { id: "1", name: "Sneakers", qty: 24, pu: 75 },
+    { id: "2", name: "Sandals", qty: 30, pu: 40 },
+    { id: "3", name: "Flip Flops", qty: 20, pu: 25 }
+
+];
+
+let products = [];
+let sales = [];
+
+document.getElementById('saleDate').valueAsDate = new Date();
+
+window.onload = () => {
+
+    const code = prompt("Code d'accès :");
+
+    if (code !== "2020") {
+
+        alert("Accès refusé");
+        location.reload();
+        return;
+
+    }
+
+    document.getElementById('mainApp').style.display = 'block';
+
+    initializeDatabase();
+
+};
+
+function initializeDatabase() {
+
+    db.ref('products').on('value', snapshot => {
+
+        const data = snapshot.val();
+
+        if (data) {
+
+            products = data;
+
+        } else {
+
+            products = defaultProducts;
+            db.ref('products').set(products);
+
+        }
+
+        updateDashboard();
+
     });
 
-    function checkAccessCode() {
-        const code = prompt("Veuillez saisir le code d'accès pour ouvrir l'application :");
-        if (code === "2020") {
-            isAccessGranted = true;
-            document.getElementById('mainApp').style.display = 'block';
-            initializeDatabaseSync();
+    db.ref('sales').on('value', snapshot => {
+
+        const data = snapshot.val();
+
+        if (data) {
+
+            sales = Object.keys(data).map(key => ({
+                ...data[key],
+                firebaseKey: key
+            }));
+
         } else {
-            alert("Code incorrect ! L'accès est refusé.");
-            checkAccessCode();
+
+            sales = [];
+
         }
+
+        updateDashboard();
+
+        document.getElementById('loadingOverlay').style.display = 'none';
+
+    });
+
+}
+
+function updateDashboard() {
+
+    const select = document.getElementById('saleProductSelect');
+
+    select.innerHTML = `
+        <option value="">Choisir un produit</option>
+    `;
+
+    products.forEach(p => {
+
+        select.innerHTML += `
+            <option value="${p.id}">
+                ${p.name} (${p.qty})
+            </option>
+        `;
+
+    });
+
+    // STOCK
+
+    const invBody = document.querySelector('#inventoryTable tbody');
+
+    invBody.innerHTML = '';
+
+    products.forEach(p => {
+
+        let badgeClass = 'badge-success';
+
+        if (p.qty <= 5) badgeClass = 'badge-warning';
+
+        if (p.qty <= 0) badgeClass = 'badge-danger';
+
+        invBody.innerHTML += `
+
+            <tr>
+
+                <td>${p.name}</td>
+
+                <td>${p.pu}</td>
+
+                <td>
+                    <span class="badge ${badgeClass}">
+                        ${p.qty}
+                    </span>
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+    // SALES
+
+    const salesBody = document.querySelector('#salesTable tbody');
+
+    salesBody.innerHTML = '';
+
+    let totalCA = 0;
+    let totalCost = 0;
+    let totalProfit = 0;
+
+    sales.forEach(s => {
+
+        totalCA += s.totalCA;
+        totalCost += s.totalCost;
+        totalProfit += s.profit;
+
+        salesBody.innerHTML += `
+
+            <tr>
+
+                <td>${s.date}</td>
+
+                <td>${s.productName}</td>
+
+                <td>${s.quantity}</td>
+
+                <td>${s.totalCost.toFixed(2)}</td>
+
+                <td>${s.totalCA.toFixed(2)}</td>
+
+                <td>${s.profit.toFixed(2)}</td>
+
+                <td>
+
+                    <button class="delete-btn"
+                        onclick="deleteSale('${s.firebaseKey}', '${s.productId}', ${s.quantity})">
+
+                        Supprimer
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+    document.getElementById('totalCA').innerText = totalCA.toFixed(2);
+    document.getElementById('totalCost').innerText = totalCost.toFixed(2);
+    document.getElementById('totalProfit').innerText = totalProfit.toFixed(2);
+
+}
+
+function handleProductChange() {
+
+    const productId = document.getElementById('saleProductSelect').value;
+
+    const product = products.find(p => p.id === productId);
+
+    document.getElementById('costPrice').value = product ? product.pu : '';
+
+}
+
+document.getElementById('salesForm').addEventListener('submit', function(e) {
+
+    e.preventDefault();
+
+    const date = document.getElementById('saleDate').value;
+
+    const productId = document.getElementById('saleProductSelect').value;
+
+    const salePrice = parseFloat(document.getElementById('salePrice').value);
+
+    const quantity = parseInt(document.getElementById('saleQty').value);
+
+    const productIndex = products.findIndex(p => p.id === productId);
+
+    if (productIndex === -1) return;
+
+    const product = products[productIndex];
+
+    if (product.qty < quantity) {
+
+        alert("Stock insuffisant !");
+        return;
+
     }
+
+    product.qty -= quantity;
+
+    const totalCost = product.pu * quantity;
+    const totalCA = salePrice * quantity;
+    const profit = totalCA - totalCost;
+
+    const newSale = {
+
+        date,
+        productId: product.id,
+        productName: product.name,
+        quantity,
+        totalCost,
+        totalCA,
+        profit
+
+    };
+
+    db.ref('products').set(products);
+
+    db.ref('sales').push(newSale);
+
+    this.reset();
 
     document.getElementById('saleDate').valueAsDate = new Date();
 
-    // تم تعديل هذه الدالة لفصل المنتجات عن المبيعات بشكل كامل لمنع التداخل والتعليق
-    function initializeDatabaseSync() {
-        if (!isAccessGranted) return;
+});
 
-        // 1. الاستماع للمنتجات فقط
-        db.ref('products').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                products = data;
-            } else {
-                products = [...defaultProducts];
-                db.ref('products').set(products);
-            }
-            checkLoadingState();
+function deleteSale(firebaseKey, productId, quantity) {
+
+    if (!confirm("Supprimer cette vente ?")) {
+        return;
+    }
+
+    const productIndex = products.findIndex(p => p.id === productId);
+
+    if (productIndex === -1) {
+
+        alert("Produit introuvable !");
+        return;
+
+    }
+
+    products[productIndex].qty += quantity;
+
+    db.ref('products').set(products)
+
+        .then(() => {
+
+            return db.ref('sales/' + firebaseKey).remove();
+
+        })
+
+        .then(() => {
+
+            alert("Vente supprimée ✅");
+
+        })
+
+        .catch(error => {
+
+            alert(error.message);
+
         });
 
-        // 2. الاستماع للمبيعات فقط بشكل منفصل تماماً
-        db.ref('sales').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                sales = Object.keys(data).map(key => ({...data[key], firebaseKey: key}));
-            } else {
-                sales = []; // إذا مسحت من الفايربيس تصبح المصفوفة فارغة فوراً وتتحدث الواجهة
-            }
-            checkLoadingState();
-        });
-    }
+}
 
-    let checkCount = 0;
-    function checkLoadingState() {
-        checkCount++;
-        if (checkCount >= 2) { // التأكد من تحميل المنتجات والمبيعات معاً لأول مرة
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
-        updateDashboardView();
-    }
+function resetInventoryToDefault() {
 
-    function saveToFirebase() {
-        if (!isAccessGranted) return;
-        db.ref('products').set(products);
-    }
+    if (!confirm("Réinitialiser tout ?")) return;
 
-    function updateDashboardView() {
-        const select = document.getElementById('saleProductSelect');
-        const previousSelection = select.value;
-        select.innerHTML = '<option value="">-- Choisir un produit disponible --</option>';
+    products = JSON.parse(JSON.stringify(defaultProducts));
 
-        products.forEach(p => {
-            const isOutOfStock = p.qty <= 0 ? 'disabled' : '';
-            select.innerHTML += `<option value="${p.id}" ${isOutOfStock}>${p.name} (Dispo: ${p.qty})</option>`;
-        });
-        select.value = previousSelection;
+    db.ref('products').set(products);
 
-        const invBody = document.querySelector('#inventoryTable tbody');
-        invBody.innerHTML = '';
-        products.forEach(p => {
-            let badgeClass = 'badge badge-success';
-            if (p.qty === 0) badgeClass = 'badge badge-danger';
-            else if (p.qty <= 5) badgeClass = 'badge badge-warning';
+    db.ref('sales').remove();
 
-            invBody.innerHTML += `
-                <tr>
-                    <td style="text-align: left; font-weight: 500;">${p.name}</td>
-                    <td style="font-weight: bold; color: #7f8c8d;">${p.pu}</td>
-                    <td><span class="${badgeClass}">${p.qty} pcs</span></td>
-                </tr>
-            `;
-        });
+}
 
-        const salesBody = document.querySelector('#salesTable tbody');
-        salesBody.innerHTML = '';
-
-        let globalCA = 0;
-        let globalCost = 0;
-        let globalProfit = 0;
-
-        sales.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        sales.forEach((s) => {
-            globalCA += s.totalCA;
-            globalCost += s.totalCost;
-            globalProfit += s.profit;
-
-            const escapedKey = String(s.firebaseKey);
-            const escapedName = s.productName.replace(/['"]/g, '\\$&');
-
-            salesBody.innerHTML += `
-                <tr>
-                    <td>${s.date}</td>
-                    <td style="text-align: left; font-weight: 600;">${s.productName}</td>
-                    <td>${s.quantity}</td>
-                    <td>${s.totalCost.toFixed(2)}</td>
-                    <td style="color: var(--accent-color); font-weight: bold;">${s.totalCA.toFixed(2)}</td>
-                    <td style="color: var(--success-color); font-weight: bold;">${s.profit.toFixed(2)}</td>
-                    <td><button class="delete-btn" onclick="deleteSale('${escapedKey}', '${escapedName}', ${s.quantity})">Supprimer</button></td>
-                </tr>
-            `;
-        });
-
-        document.getElementById('totalCA').innerText = globalCA.toFixed(2);
-        document.getElementById('totalCost').innerText = globalCost.toFixed(2);
-        document.getElementById('totalProfit').innerText = globalProfit.toFixed(2);
-    }
-
-    function handleProductChange() {
-        const productId = document.getElementById('saleProductSelect').value;
-        const costInput = document.getElementById('costPrice');
-
-        if (productId) {
-            const product = products.find(p => p.id === productId);
-            costInput.value = product.pu;
-        } else {
-            costInput.value = '';
-        }
-        document.getElementById('salePrice').value = '';
-        document.getElementById('saleQty').value = '';
-    }
-
-    document.getElementById('salesForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const date = document.getElementById('saleDate').value;
-        const productId = document.getElementById('saleProductSelect').value;
-        const costPrice = parseFloat(document.getElementById('costPrice').value);
-        const salePrice = parseFloat(document.getElementById('salePrice').value);
-        const quantity = parseInt(document.getElementById('saleQty').value);
-
-        const product = products.find(p => p.id === productId);
-
-        if (!product) return;
-
-        if (product.qty < quantity) {
-            alert(`Désolé ! Quantité insuffisante. Il ne reste que ${product.qty} pièces en stock.`);
-            return;
-        }
-
-        const totalCost = costPrice * quantity;
-        const totalCA = salePrice * quantity;
-        const profit = totalCA - totalCost;
-
-        product.qty -= quantity;
-
-        const newSale = { date, productName: product.name, quantity, totalCost, totalCA, profit };
-        
-        db.ref('sales').push(newSale);
-        saveToFirebase();
-
-        document.getElementById('costPrice').value = '';
-        document.getElementById('salePrice').value = '';
-        document.getElementById('saleQty').value = '';
-        document.getElementById('saleProductSelect').value = '';
-    });
-
-    function deleteSale(firebaseKey, productName, quantity) {
-        if (confirm("En supprimant cette vente, les articles seront rajoutés au stock automatiquement. Confirmer ?")) {
-            const prod = products.find(p => p.name === productName);
-            if (prod) {
-                prod.qty += quantity;
-            }
-            db.ref('sales').child(firebaseKey).remove()
-                .then(() => {
-                    saveToFirebase();
-                })
-                .catch((error) => {
-                    alert("Erreur lors de la suppression: " + error.message);
-                });
-        }
-    }
-
-    // الدالة النهائية بعد حل مشكلة التداخل بشكل كامل
-    function resetInventoryToDefault() {
-        if(confirm("Êtes-vous sûr de vouloir réinitialiser le stock aux valeurs initiales et supprimer TOUTES les ventes ?")) {
-            products = JSON.parse(JSON.stringify(defaultProducts));
-            sales = []; 
-            
-            // تحديث المنتجات وحذف عقدة المبيعات تماماً
-            db.ref('products').set(products);
-            db.ref('sales').remove() 
-                .then(() => {
-                    alert("Le stock a été réinitialisé et l'historique des ventes a été vidé ! 🎉");
-                })
-                .catch((error) => {
-                    alert("Erreur lors de la réinitialisation: " + error.message);
-                });
-        }
-    }
-
-    function exportDataBackup() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ products, sales }));
-        const downloadAnchor = document.createElement('a');
-        const today = new Date().toISOString().slice(0, 10);
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `Backup_Stock_Ayoub_${today}.json`);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    }
-
-    function importDataBackup() {
-        const fileInput = document.getElementById('importFile');
-        if (fileInput.files.length === 0) {
-            alert("Veuillez sélectionner un fichier de sauvegarde (.json) d'abord !");
-            return;
-        }
-
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                if (importedData.products && importedData.sales) {
-                    if (confirm("Voulez-vous écraser les données actuelles et restaurer cette sauvegarde ?")) {
-                        products = importedData.products;
-                        
-                        const salesObj = {};
-                        importedData.sales.forEach((s, idx) => {
-                            salesObj['imported_' + idx] = s;
-                        });
-                        
-                        db.ref('products').set(products);
-                        db.ref('sales').set(salesObj);
-                        alert("Données restaurées avec succès ! 🎉");
-                    }
-                } else {
-                    alert("Fichier invalide.");
-                }
-            } catch (err) {
-                alert("Erreur lors de la lecture du fichier.");
-            }
-        };
-        reader.readAsText(file);
-    }
 </script>
 
 </body>
