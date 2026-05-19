@@ -289,7 +289,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-    // 🔗 الأكواد الخاصة بمشروعك المستخرجة من صورك
     const firebaseConfig = {
         apiKey: "AIzaSyAn3cl74J4CY7Qzb8tF_KlercWOs0BGSBc",
         authDomain: "stock-166df.firebaseapp.com",
@@ -300,7 +299,6 @@
         appId: "1:1071318301341:web:e1a512beec2a20cf3274"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -329,7 +327,6 @@
 
     document.getElementById('saleDate').valueAsDate = new Date();
 
-    // المزامنة الحية المباشرة مع السحابة لجميع المستخدمين في نفس الوقت
     db.ref().on('value', (snapshot) => {
         const data = snapshot.val();
         
@@ -391,6 +388,10 @@
             globalCost += s.totalCost;
             globalProfit += s.profit;
 
+            // تم استبدال الكوتشينات الفردية بمتغير نصي نظيف لمنع حدوث أخطاء التعرف على الـ Key في متصفحات الويب
+            const escapedKey = String(s.firebaseKey);
+            const escapedName = s.productName.replace(/['"]/g, '\\$&');
+
             salesBody.innerHTML += `
                 <tr>
                     <td>${s.date}</td>
@@ -399,7 +400,7 @@
                     <td>${s.totalCost.toFixed(2)}</td>
                     <td style="color: var(--accent-color); font-weight: bold;">${s.totalCA.toFixed(2)}</td>
                     <td style="color: var(--success-color); font-weight: bold;">${s.profit.toFixed(2)}</td>
-                    <td><button class="delete-btn" onclick="deleteSale('${s.firebaseKey}', '${s.productName}', ${s.quantity})">Supprimer</button></td>
+                    <td><button class="delete-btn" onclick="deleteSale('${escapedKey}', '${escapedName}', ${s.quantity})">Supprimer</button></td>
                 </tr>
             `;
         });
@@ -464,8 +465,13 @@
             if (prod) {
                 prod.qty += quantity;
             }
-            db.ref('sales/' + firebaseKey).remove();
-            saveToFirebase();
+            db.ref('sales').child(firebaseKey).remove()
+                .then(() => {
+                    saveToFirebase();
+                })
+                .catch((error) => {
+                    alert("Erreur lors de la suppression: " + error.message);
+                });
         }
     }
 
