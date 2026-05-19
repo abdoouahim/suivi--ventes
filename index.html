@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Stock Manager Pro - Final</title>
+<title>Stock Manager Pro</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -24,8 +24,6 @@ button{padding:10px;border:none;border-radius:6px;cursor:pointer}
 table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
 th{background:#2c3e50;color:white}
-.alert{background:#fff3cd;color:#856404;padding:10px;margin:5px 0;border-radius:6px}
-.low{color:red;font-weight:bold}
 </style>
 </head>
 
@@ -44,40 +42,30 @@ th{background:#2c3e50;color:white}
 
 <h2>📦 Stock Manager Pro</h2>
 
-<!-- ALERTS -->
-<div class="card">
-    <h3>🔔 Alerts Stock</h3>
-    <div id="alerts"></div>
-</div>
-
-<!-- CHART -->
 <div class="card">
     <canvas id="chart"></canvas>
 </div>
 
-<!-- SALE -->
 <div class="card">
     <h3>➕ Nouvelle Vente</h3>
+
     <select id="productSelect"></select>
     <input id="price" placeholder="Prix vente">
     <input id="qty" placeholder="Quantité">
+
     <button class="btn-success" onclick="addSale()">Ajouter</button>
 </div>
 
-<!-- EXPORT -->
 <div class="card">
-    <h3>📁 Export</h3>
     <button class="btn" onclick="exportExcel()">Excel</button>
     <button class="btn" onclick="exportPDF()">PDF</button>
 </div>
 
-<!-- STOCK -->
 <div class="card">
     <h3>📦 Stock</h3>
     <table id="stockTable"></table>
 </div>
 
-<!-- SALES -->
 <div class="card">
     <h3>📊 Sales</h3>
     <table id="salesTable"></table>
@@ -87,6 +75,7 @@ th{background:#2c3e50;color:white}
 
 <script>
 
+// 🔥 Firebase config (tuu)
 const firebaseConfig = {
     apiKey: "AIzaSyAn3cl74J4CY7Qzb8tF_KlercWOs0BGSBc",
     authDomain: "stock-166df.firebaseapp.com",
@@ -105,18 +94,19 @@ let products = [];
 let sales = [];
 let chart;
 
-// LOGIN
+// 👤 LOGIN
 function login(){
-    auth.signInWithEmailAndPassword(email.value,password.value)
-    .then(()=>{
+    auth.signInWithEmailAndPassword(
+        email.value,
+        password.value
+    ).then(()=>{
         loginBox.style.display="none";
         app.style.display="block";
         init();
-    })
-    .catch(e=>alert(e.message));
+    }).catch(e=>alert(e.message));
 }
 
-// INIT
+// 📦 INIT DATA
 function init(){
 
 db.ref("products").on("value",s=>{
@@ -132,7 +122,7 @@ db.ref("sales").on("value",s=>{
 
 }
 
-// ADD SALE
+// ➕ ADD SALE
 function addSale(){
 
 let id = productSelect.value;
@@ -157,38 +147,29 @@ db.ref("sales").push(sale);
 
 }
 
-// RENDER
+// 📊 RENDER
 function render(){
 
 // STOCK
-let stockHTML = "<tr><th>Produit</th><th>Stock</th></tr>";
-let alertsHTML = "";
-
+let t = "<tr><th>Produit</th><th>Stock</th></tr>";
 products.forEach(p=>{
-    stockHTML += `<tr><td>${p.name}</td><td>${p.qty}</td></tr>`;
-
-    if(p.qty <= 5){
-        alertsHTML += `<div class='alert'>⚠ Stock faible: <span class='low'>${p.name} (${p.qty})</span></div>`;
-    }
+    t += `<tr><td>${p.name}</td><td>${p.qty}</td></tr>`;
+    if(p.qty<=5) console.log("⚠ Stock faible",p.name);
 });
-
-stockTable.innerHTML = stockHTML;
-alerts.innerHTML = alertsHTML || "✅ Aucun problème de stock";
+stockTable.innerHTML = t;
 
 // SALES
-let salesHTML = "<tr><th>Date</th><th>Produit</th><th>Q</th><th>CA</th><th>Profit</th></tr>";
-
-sales.forEach(s=>{
-    salesHTML += `<tr>
-    <td>${s.date}</td>
-    <td>${s.productName}</td>
-    <td>${s.qty}</td>
-    <td>${s.ca}</td>
-    <td>${s.profit}</td>
+let s = "<tr><th>Date</th><th>Produit</th><th>Q</th><th>CA</th><th>Profit</th></tr>";
+sales.forEach(x=>{
+    s += `<tr>
+    <td>${x.date}</td>
+    <td>${x.productName}</td>
+    <td>${x.qty}</td>
+    <td>${x.ca}</td>
+    <td>${x.profit}</td>
     </tr>`;
 });
-
-salesTable.innerHTML = salesHTML;
+salesTable.innerHTML = s;
 
 // SELECT
 productSelect.innerHTML = products.map(p=>
@@ -197,16 +178,23 @@ productSelect.innerHTML = products.map(p=>
 
 // CHART
 let ctx = document.getElementById("chart");
+
 if(chart) chart.destroy();
 
-chart = new Chart(ctx,{type:"line",data:{
-labels:sales.map(s=>s.date),
-datasets:[{label:"Profit",data:sales.map(s=>s.profit)}]
-}});
+chart = new Chart(ctx,{
+    type:"line",
+    data:{
+        labels:sales.map(s=>s.date),
+        datasets:[{
+            label:"Profit",
+            data:sales.map(s=>s.profit)
+        }]
+    }
+});
 
 }
 
-// EXPORT EXCEL
+// 📁 EXPORT EXCEL
 function exportExcel(){
 let wb = XLSX.utils.book_new();
 let ws = XLSX.utils.json_to_sheet(sales);
@@ -214,7 +202,7 @@ XLSX.utils.book_append_sheet(wb,ws,"Sales");
 XLSX.writeFile(wb,"sales.xlsx");
 }
 
-// EXPORT PDF
+// 📄 EXPORT PDF
 function exportPDF(){
 const { jsPDF } = window.jspdf;
 let doc = new jsPDF();
@@ -222,7 +210,7 @@ doc.text("Sales Report",10,10);
 
 let y=20;
 sales.forEach(s=>{
-    doc.text(`${s.date} | ${s.productName} | ${s.profit}`,10,y);
+    doc.text(`${s.date} ${s.productName} ${s.profit}`,10,y);
     y+=10;
 });
 
