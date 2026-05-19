@@ -1,221 +1,256 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Stock Manager Pro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Manager Pro - No Login</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<style>
-body{font-family:Arial;background:#f4f6f7;margin:0;padding:20px}
-.container{max-width:1100px;margin:auto;background:#fff;padding:20px;border-radius:10px}
-.card{padding:15px;border:1px solid #ddd;margin-bottom:15px;border-radius:10px}
-input,select{width:100%;padding:10px;margin:5px 0}
-button{padding:10px;border:none;border-radius:6px;cursor:pointer}
-.btn{background:#2980b9;color:white}
-.btn-danger{background:#e74c3c;color:white}
-.btn-success{background:#27ae60;color:white}
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
-th{background:#2c3e50;color:white}
-</style>
+    <style>
+        body{font-family:Arial, sans-serif;background:#f4f6f7;margin:0;padding:20px}
+        .container{max-width:1100px;margin:auto;background:#fff;padding:20px;border-radius:10px;box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
+        .card{padding:15px;border:1px solid #ddd;margin-bottom:15px;border-radius:10px}
+        input,select{width:100%;padding:10px;margin:5px 0;box-sizing: border-box;}
+        button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-weight: bold;}
+        .btn{background:#2980b9;color:white}
+        .btn:hover{background:#216999}
+        .btn-danger{background:#e74c3c;color:white}
+        .btn-success{background:#27ae60;color:white;width:100%;margin-top:10px;}
+        .btn-success:hover{background:#219150}
+        table{width:100%;border-collapse:collapse;margin-top:10px;}
+        th,td{padding:10px;border-bottom:1px solid #ddd;text-align:center}
+        th{background:#2c3e50;color:white}
+        .alert{background:#fff3cd;color:#856404;padding:10px;margin:5px 0;border-radius:6px}
+        .low{color:red;font-weight:bold}
+    </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginBox" class="container">
-    <h2>🔐 Login</h2>
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <button class="btn" onclick="login()">Login</button>
-</div>
+<div class="container">
 
-<!-- APP -->
-<div id="app" class="container" style="display:none">
+    <h2>📦 Stock Manager Pro (No Login)</h2>
 
-<h2>📦 Stock Manager Pro</h2>
+    <div class="card">
+        <h3>🔔 Alerts Stock</h3>
+        <div id="alerts"></div>
+    </div>
 
-<div class="card">
-    <canvas id="chart"></canvas>
-</div>
+    <div class="card">
+        <h3>📈 Graphique des Profits</h3>
+        <canvas id="chart" style="max-height: 300px;"></canvas>
+    </div>
 
-<div class="card">
-    <h3>➕ Nouvelle Vente</h3>
+    <div class="card">
+        <h3>➕ Nouvelle Vente</h3>
+        <label for="productSelect">Choisir le produit :</label>
+        <select id="productSelect"></select>
+        
+        <label for="salePriceInput">Prix de vente (DH) :</label>
+        <input type="number" id="salePriceInput" placeholder="Ex: 120">
+        
+        <label for="saleQtyInput">Quantité :</label>
+        <input type="number" id="saleQtyInput" placeholder="Ex: 2">
+        
+        <button class="btn-success" onclick="addSale()">Ajouter la vente</button>
+    </div>
 
-    <select id="productSelect"></select>
-    <input id="price" placeholder="Prix vente">
-    <input id="qty" placeholder="Quantité">
+    <div class="card">
+        <h3>📁 Exportation des données</h3>
+        <button class="btn" onclick="exportExcel()">📥 Exporter vers Excel</button>
+        <button class="btn" onclick="exportPDF()">📥 Exporter en PDF</button>
+    </div>
 
-    <button class="btn-success" onclick="addSale()">Ajouter</button>
-</div>
+    <div class="card">
+        <h3>📦 État du Stock</h3>
+        <table id="stockTable"></table>
+    </div>
 
-<div class="card">
-    <button class="btn" onclick="exportExcel()">Excel</button>
-    <button class="btn" onclick="exportPDF()">PDF</button>
-</div>
-
-<div class="card">
-    <h3>📦 Stock</h3>
-    <table id="stockTable"></table>
-</div>
-
-<div class="card">
-    <h3>📊 Sales</h3>
-    <table id="salesTable"></table>
-</div>
+    <div class="card">
+        <h3>📊 Historique des Ventes</h3>
+        <table id="salesTable"></table>
+    </div>
 
 </div>
 
 <script>
 
-// 🔥 Firebase config (tuu)
-const firebaseConfig = {
-    apiKey: "AIzaSyAn3cl74J4CY7Qzb8tF_KlercWOs0BGSBc",
-    authDomain: "stock-166df.firebaseapp.com",
-    databaseURL: "https://stock-166df-default-rtdb.firebaseio.com",
-    projectId: "stock-166df",
-    storageBucket: "stock-166df.appspot.com",
-    messagingSenderId: "1071318301341",
-    appId: "1:1071318301341:web:e1a512beec2a20cf3274"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAn3cl74J4CY7Qzb8tF_KlercWOs0BGSBc",
+        authDomain: "stock-166df.firebaseapp.com",
+        databaseURL: "https://stock-166df-default-rtdb.firebaseio.com",
+        projectId: "stock-166df",
+        storageBucket: "stock-166df.appspot.com",
+        messagingSenderId: "1071318301341",
+        appId: "1:1071318301341:web:e1a512beec2a20cf3274"
+    };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const auth = firebase.auth();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-let products = [];
-let sales = [];
-let chart;
+    let products = [];
+    let sales = [];
+    let chart;
 
-// 👤 LOGIN
-function login(){
-    auth.signInWithEmailAndPassword(
-        email.value,
-        password.value
-    ).then(()=>{
-        loginBox.style.display="none";
-        app.style.display="block";
-        init();
-    }).catch(e=>alert(e.message));
-}
+    // تشغيل جلب البيانات تلقائياً وبدون حماية
+    init();
 
-// 📦 INIT DATA
-function init(){
+    function init(){
+        db.ref("products").on("value", s => {
+            products = s.val() || [];
+            render();
+        });
 
-db.ref("products").on("value",s=>{
-    products = s.val() || [];
-    render();
-});
-
-db.ref("sales").on("value",s=>{
-    let data = s.val() || {};
-    sales = Object.keys(data).map(k=>({...data[k],key:k}));
-    render();
-});
-
-}
-
-// ➕ ADD SALE
-function addSale(){
-
-let id = productSelect.value;
-let p = products.find(x=>x.id==id);
-let q = Number(qty.value);
-let price = Number(price.value);
-
-if(!p || q>p.qty) return alert("Stock insuffisant");
-
-p.qty -= q;
-
-let sale = {
-    date:new Date().toISOString().split("T")[0],
-    productName:p.name,
-    qty:q,
-    ca:price*q,
-    profit:(price-p.pu)*q
-};
-
-db.ref("products").set(products);
-db.ref("sales").push(sale);
-
-}
-
-// 📊 RENDER
-function render(){
-
-// STOCK
-let t = "<tr><th>Produit</th><th>Stock</th></tr>";
-products.forEach(p=>{
-    t += `<tr><td>${p.name}</td><td>${p.qty}</td></tr>`;
-    if(p.qty<=5) console.log("⚠ Stock faible",p.name);
-});
-stockTable.innerHTML = t;
-
-// SALES
-let s = "<tr><th>Date</th><th>Produit</th><th>Q</th><th>CA</th><th>Profit</th></tr>";
-sales.forEach(x=>{
-    s += `<tr>
-    <td>${x.date}</td>
-    <td>${x.productName}</td>
-    <td>${x.qty}</td>
-    <td>${x.ca}</td>
-    <td>${x.profit}</td>
-    </tr>`;
-});
-salesTable.innerHTML = s;
-
-// SELECT
-productSelect.innerHTML = products.map(p=>
-`<option value="${p.id}">${p.name}</option>`
-);
-
-// CHART
-let ctx = document.getElementById("chart");
-
-if(chart) chart.destroy();
-
-chart = new Chart(ctx,{
-    type:"line",
-    data:{
-        labels:sales.map(s=>s.date),
-        datasets:[{
-            label:"Profit",
-            data:sales.map(s=>s.profit)
-        }]
+        db.ref("sales").on("value", s => {
+            let data = s.val() || {};
+            sales = Object.keys(data).map(k => ({...data[k], key: k}));
+            render();
+        });
     }
-});
 
-}
+    // إضافة عملية بيع جديدة
+    function addSale(){
+        const selectEl = document.getElementById("productSelect");
+        const priceEl = document.getElementById("salePriceInput");
+        const qtyEl = document.getElementById("saleQtyInput");
 
-// 📁 EXPORT EXCEL
-function exportExcel(){
-let wb = XLSX.utils.book_new();
-let ws = XLSX.utils.json_to_sheet(sales);
-XLSX.utils.book_append_sheet(wb,ws,"Sales");
-XLSX.writeFile(wb,"sales.xlsx");
-}
+        let id = selectEl.value;
+        let p = products.find(x => x.id == id);
+        let q = Number(qtyEl.value);
+        let price = Number(priceEl.value);
 
-// 📄 EXPORT PDF
-function exportPDF(){
-const { jsPDF } = window.jspdf;
-let doc = new jsPDF();
-doc.text("Sales Report",10,10);
+        if(!p) return alert("Veuillez sélectionner un produit.");
+        if(q <= 0 || price <= 0) return alert("Veuillez entrer une quantité et un prix valides.");
+        if(q > p.qty) return alert(`Stock insuffisant ! Il reste uniquement ${p.qty} pièces.`);
 
-let y=20;
-sales.forEach(s=>{
-    doc.text(`${s.date} ${s.productName} ${s.profit}`,10,y);
-    y+=10;
-});
+        // خصم الكمية من المخزون
+        p.qty -= q;
 
-doc.save("report.pdf");
-}
+        let sale = {
+            date: new Date().toISOString().split("T")[0],
+            productName: p.name,
+            qty: q,
+            ca: price * q,
+            profit: (price - p.pu) * q
+        };
+
+        // تحديث البيانات على Firebase
+        db.ref("products").set(products);
+        db.ref("sales").push(sale);
+
+        // تصفير الخانات بعد البيع الناجح
+        priceEl.value = "";
+        qtyEl.value = "";
+    }
+
+    // تحديث الواجهة والجداول والرسوم البيانية
+    function render(){
+        // STOCK & ALERTS
+        const stockTable = document.getElementById("stockTable");
+        const alerts = document.getElementById("alerts");
+        
+        let stockHTML = "<tr><th>Produit</th><th>Stock disponible</th></tr>";
+        let alertsHTML = "";
+
+        products.forEach(p => {
+            stockHTML += `<tr><td>${p.name}</td><td>${p.qty} pcs</td></tr>`;
+
+            if(p.qty <= 5){
+                alertsHTML += `<div class='alert'>⚠ Stock faible: <span class='low'>${p.name} (${p.qty} pcs)</span></div>`;
+            }
+        });
+
+        stockTable.innerHTML = stockHTML;
+        alerts.innerHTML = alertsHTML || "✅ Aucun problème de stock";
+
+        // SALES
+        const salesTable = document.getElementById("salesTable");
+        let salesHTML = "<tr><th>Date</th><th>Produit</th><th>Quantité</th><th>CA (DH)</th><th>Profit (DH)</th></tr>";
+
+        // ترتيب المبيعات لتظهر الأحدث أولاً
+        sales.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        sales.forEach(s => {
+            salesHTML += `<tr>
+                <td>${s.date}</td>
+                <td>${s.productName}</td>
+                <td>${s.qty}</td>
+                <td>${s.ca.toFixed(2)}</td>
+                <td style="color: green; font-weight: bold;">${s.profit.toFixed(2)}</td>
+            </tr>`;
+        });
+
+        salesTable.innerHTML = salesHTML;
+
+        // SELECT OPTION
+        const productSelect = document.getElementById("productSelect");
+        productSelect.innerHTML = products.map(p =>
+            `<option value="${p.id}">${p.name} (Dispo: ${p.qty})</option>`
+        ).join("");
+
+        // CHART (Chart.js)
+        let ctx = document.getElementById("chart");
+        if(chart) chart.destroy();
+
+        // تجميع الأرباح حسب التواريخ للرسم البياني
+        let dates = [...new Set(sales.map(s => s.date))].sort();
+        let profitsByDate = dates.map(d => {
+            return sales.filter(s => s.date === d).reduce((sum, s) => sum + s.profit, 0);
+        });
+
+        chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: "Profit Total Jour (DH)",
+                    data: profitsByDate,
+                    borderColor: "#27ae60",
+                    backgroundColor: "rgba(39, 174, 96, 0.1)",
+                    fill: true,
+                    tension: 0.2
+                }]
+            }
+        });
+    }
+
+    // EXPORT EXCEL
+    function exportExcel(){
+        if(sales.length === 0) return alert("Aucune donnée à exporter.");
+        let wb = XLSX.utils.book_new();
+        let ws = XLSX.utils.json_to_sheet(sales.map(s => ({
+            Date: s.date,
+            Produit: s.productName,
+            Quantite: s.qty,
+            Chiffre_Affaires: s.ca,
+            Profit: s.profit
+        })));
+        XLSX.utils.book_append_sheet(wb, ws, "Sales");
+        XLSX.writeFile(wb, "Rapport_Ventes.xlsx");
+    }
+
+    // EXPORT PDF
+    function exportPDF(){
+        if(sales.length === 0) return alert("Aucune donnée à exporter.");
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF();
+        doc.text("Rapport des Ventes Journalieres", 10, 10);
+
+        let y = 20;
+        sales.forEach(s => {
+            if(y > 280) { doc.addPage(); y = 20; } // إضافة صفحة جديدة إذا امتلأت الأولى
+            doc.text(`${s.date} | ${s.productName} | Qty: ${s.qty} | Profit: ${s.profit} DH`, 10, y);
+            y += 10;
+        });
+
+        doc.save("Rapport_Ventes.pdf");
+    }
 
 </script>
 
