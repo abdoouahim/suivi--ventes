@@ -1,339 +1,82 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Ventes & Stock</title>
+<meta charset="UTF-8">
+<title>Stock Manager Pro</title>
 
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #2980b9;
-            --success-color: #27ae60;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --bg-color: #f4f6f7;
-            --text-color: #333;
-        }
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-        .container {
-            max-width: 1250px;
-            margin: 0 auto;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        }
-
-        h1, h2, h3 {
-            text-align: center;
-            color: var(--primary-color);
-        }
-
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 25px 0;
-            text-align: center;
-        }
-
-        .stat-box {
-            padding: 15px;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-        }
-
-        .stat-ca { background-color: var(--accent-color); }
-        .stat-cost { background-color: #7f8c8d; }
-        .stat-profit { background-color: var(--success-color); }
-
-        .stat-box div {
-            font-size: 24px;
-            margin-top: 5px;
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 38% 62%;
-            gap: 20px;
-        }
-
-        @media (max-width: 950px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 11px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-success {
-            background-color: var(--success-color);
-        }
-
-        .btn-primary {
-            background-color: var(--accent-color);
-        }
-
-        .btn-reset {
-            background-color: #95a5a6;
-            padding: 6px 10px;
-            width: auto;
-            margin-top: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: center;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        th {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .delete-btn {
-            background-color: var(--danger-color);
-            padding: 6px 10px;
-            font-size: 13px;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .badge-danger {
-            background-color: #fde8e8;
-            color: #c81e1e;
-        }
-
-        .badge-success {
-            background-color: #def7ec;
-            color: #03543f;
-        }
-
-        .badge-warning {
-            background-color: #fef08a;
-            color: #854d0e;
-        }
-
-        #loadingOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 22px;
-            z-index: 9999;
-        }
-    </style>
+<style>
+body{font-family:Arial;background:#f4f6f7;margin:0;padding:20px}
+.container{max-width:1100px;margin:auto;background:#fff;padding:20px;border-radius:10px}
+.card{padding:15px;border:1px solid #ddd;margin-bottom:15px;border-radius:10px}
+input,select{width:100%;padding:10px;margin:5px 0}
+button{padding:10px;border:none;border-radius:6px;cursor:pointer}
+.btn{background:#2980b9;color:white}
+.btn-danger{background:#e74c3c;color:white}
+.btn-success{background:#27ae60;color:white}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center}
+th{background:#2c3e50;color:white}
+</style>
 </head>
 
 <body>
 
-<div id="loadingOverlay">
-    Chargement...
+<!-- LOGIN -->
+<div id="loginBox" class="container">
+    <h2>🔐 Login</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button class="btn" onclick="login()">Login</button>
 </div>
 
-<div id="mainApp" style="display:none;">
+<!-- APP -->
+<div id="app" class="container" style="display:none">
 
-    <div class="container">
+<h2>📦 Stock Manager Pro</h2>
 
-        <h1>Système du Suivi des Ventes & Gestion de Stock</h1>
-
-        <div class="dashboard-stats">
-
-            <div class="stat-box stat-ca">
-                Chiffre d'Affaires
-                <div id="totalCA">0.00</div>
-            </div>
-
-            <div class="stat-box stat-cost">
-                Coût Total
-                <div id="totalCost">0.00</div>
-            </div>
-
-            <div class="stat-box stat-profit">
-                Bénéfice
-                <div id="totalProfit">0.00</div>
-            </div>
-
-        </div>
-
-        <div class="main-layout">
-
-            <!-- LEFT -->
-            <div>
-
-                <div class="card">
-
-                    <h3>Nouvelle Vente</h3>
-
-                    <form id="salesForm">
-
-                        <div class="form-group">
-                            <label>Date :</label>
-                            <input type="date" id="saleDate" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Produit :</label>
-                            <select id="saleProductSelect" required onchange="handleProductChange()">
-                                <option value="">Choisir un produit</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Prix d'achat :</label>
-                            <input type="number" id="costPrice" readonly>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Prix de vente :</label>
-                            <input type="number" id="salePrice" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Quantité :</label>
-                            <input type="number" id="saleQty" required>
-                        </div>
-
-                        <button type="submit" class="btn-success">
-                            Ajouter Vente
-                        </button>
-
-                    </form>
-
-                </div>
-
-                <div class="card">
-
-                    <h3>Stock</h3>
-
-                    <table id="inventoryTable">
-
-                        <thead>
-                            <tr>
-                                <th>Produit</th>
-                                <th>PU</th>
-                                <th>Stock</th>
-                            </tr>
-                        </thead>
-
-                        <tbody></tbody>
-
-                    </table>
-
-                    <center>
-                        <button class="btn-reset" onclick="resetInventoryToDefault()">
-                            Réinitialiser
-                        </button>
-                    </center>
-
-                </div>
-
-            </div>
-
-            <!-- RIGHT -->
-            <div>
-
-                <div class="card">
-
-                    <h3>Historique des Ventes</h3>
-
-                    <table id="salesTable">
-
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Produit</th>
-                                <th>Q</th>
-                                <th>Coût</th>
-                                <th>CA</th>
-                                <th>Profit</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-
-                        <tbody></tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
+<div class="card">
+    <canvas id="chart"></canvas>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<div class="card">
+    <h3>➕ Nouvelle Vente</h3>
+
+    <select id="productSelect"></select>
+    <input id="price" placeholder="Prix vente">
+    <input id="qty" placeholder="Quantité">
+
+    <button class="btn-success" onclick="addSale()">Ajouter</button>
+</div>
+
+<div class="card">
+    <button class="btn" onclick="exportExcel()">Excel</button>
+    <button class="btn" onclick="exportPDF()">PDF</button>
+</div>
+
+<div class="card">
+    <h3>📦 Stock</h3>
+    <table id="stockTable"></table>
+</div>
+
+<div class="card">
+    <h3>📊 Sales</h3>
+    <table id="salesTable"></table>
+</div>
+
+</div>
 
 <script>
 
+// 🔥 Firebase config (tuu)
 const firebaseConfig = {
-
     apiKey: "AIzaSyAn3cl74J4CY7Qzb8tF_KlercWOs0BGSBc",
     authDomain: "stock-166df.firebaseapp.com",
     databaseURL: "https://stock-166df-default-rtdb.firebaseio.com",
@@ -341,309 +84,137 @@ const firebaseConfig = {
     storageBucket: "stock-166df.appspot.com",
     messagingSenderId: "1071318301341",
     appId: "1:1071318301341:web:e1a512beec2a20cf3274"
-
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.database();
-
-const defaultProducts = [
-
-    { id: "1", name: "Sneakers", qty: 24, pu: 75 },
-    { id: "2", name: "Sandals", qty: 30, pu: 40 },
-    { id: "3", name: "Flip Flops", qty: 20, pu: 25 }
-
-];
+const auth = firebase.auth();
 
 let products = [];
 let sales = [];
+let chart;
 
-document.getElementById('saleDate').valueAsDate = new Date();
-
-window.onload = () => {
-
-    const code = prompt("Code d'accès :");
-
-    if (code !== "2020") {
-
-        alert("Accès refusé");
-        location.reload();
-        return;
-
-    }
-
-    document.getElementById('mainApp').style.display = 'block';
-
-    initializeDatabase();
-
-};
-
-function initializeDatabase() {
-
-    db.ref('products').on('value', snapshot => {
-
-        const data = snapshot.val();
-
-        if (data) {
-
-            products = data;
-
-        } else {
-
-            products = defaultProducts;
-            db.ref('products').set(products);
-
-        }
-
-        updateDashboard();
-
-    });
-
-    db.ref('sales').on('value', snapshot => {
-
-        const data = snapshot.val();
-
-        if (data) {
-
-            sales = Object.keys(data).map(key => ({
-                ...data[key],
-                firebaseKey: key
-            }));
-
-        } else {
-
-            sales = [];
-
-        }
-
-        updateDashboard();
-
-        document.getElementById('loadingOverlay').style.display = 'none';
-
-    });
-
+// 👤 LOGIN
+function login(){
+    auth.signInWithEmailAndPassword(
+        email.value,
+        password.value
+    ).then(()=>{
+        loginBox.style.display="none";
+        app.style.display="block";
+        init();
+    }).catch(e=>alert(e.message));
 }
 
-function updateDashboard() {
-
-    const select = document.getElementById('saleProductSelect');
-
-    select.innerHTML = `
-        <option value="">Choisir un produit</option>
-    `;
-
-    products.forEach(p => {
-
-        select.innerHTML += `
-            <option value="${p.id}">
-                ${p.name} (${p.qty})
-            </option>
-        `;
-
-    });
-
-    // STOCK
-
-    const invBody = document.querySelector('#inventoryTable tbody');
-
-    invBody.innerHTML = '';
-
-    products.forEach(p => {
-
-        let badgeClass = 'badge-success';
-
-        if (p.qty <= 5) badgeClass = 'badge-warning';
-
-        if (p.qty <= 0) badgeClass = 'badge-danger';
-
-        invBody.innerHTML += `
-
-            <tr>
-
-                <td>${p.name}</td>
-
-                <td>${p.pu}</td>
-
-                <td>
-                    <span class="badge ${badgeClass}">
-                        ${p.qty}
-                    </span>
-                </td>
-
-            </tr>
-
-        `;
-
-    });
-
-    // SALES
-
-    const salesBody = document.querySelector('#salesTable tbody');
-
-    salesBody.innerHTML = '';
-
-    let totalCA = 0;
-    let totalCost = 0;
-    let totalProfit = 0;
-
-    sales.forEach(s => {
-
-        totalCA += s.totalCA;
-        totalCost += s.totalCost;
-        totalProfit += s.profit;
-
-        salesBody.innerHTML += `
-
-            <tr>
-
-                <td>${s.date}</td>
-
-                <td>${s.productName}</td>
-
-                <td>${s.quantity}</td>
-
-                <td>${s.totalCost.toFixed(2)}</td>
-
-                <td>${s.totalCA.toFixed(2)}</td>
-
-                <td>${s.profit.toFixed(2)}</td>
-
-                <td>
-
-                    <button class="delete-btn"
-                        onclick="deleteSale('${s.firebaseKey}', '${s.productId}', ${s.quantity})">
-
-                        Supprimer
-
-                    </button>
-
-                </td>
-
-            </tr>
-
-        `;
-
-    });
-
-    document.getElementById('totalCA').innerText = totalCA.toFixed(2);
-    document.getElementById('totalCost').innerText = totalCost.toFixed(2);
-    document.getElementById('totalProfit').innerText = totalProfit.toFixed(2);
-
-}
-
-function handleProductChange() {
-
-    const productId = document.getElementById('saleProductSelect').value;
-
-    const product = products.find(p => p.id === productId);
-
-    document.getElementById('costPrice').value = product ? product.pu : '';
-
-}
-
-document.getElementById('salesForm').addEventListener('submit', function(e) {
-
-    e.preventDefault();
-
-    const date = document.getElementById('saleDate').value;
-
-    const productId = document.getElementById('saleProductSelect').value;
-
-    const salePrice = parseFloat(document.getElementById('salePrice').value);
-
-    const quantity = parseInt(document.getElementById('saleQty').value);
-
-    const productIndex = products.findIndex(p => p.id === productId);
-
-    if (productIndex === -1) return;
-
-    const product = products[productIndex];
-
-    if (product.qty < quantity) {
-
-        alert("Stock insuffisant !");
-        return;
-
-    }
-
-    product.qty -= quantity;
-
-    const totalCost = product.pu * quantity;
-    const totalCA = salePrice * quantity;
-    const profit = totalCA - totalCost;
-
-    const newSale = {
-
-        date,
-        productId: product.id,
-        productName: product.name,
-        quantity,
-        totalCost,
-        totalCA,
-        profit
-
-    };
-
-    db.ref('products').set(products);
-
-    db.ref('sales').push(newSale);
-
-    this.reset();
-
-    document.getElementById('saleDate').valueAsDate = new Date();
-
+// 📦 INIT DATA
+function init(){
+
+db.ref("products").on("value",s=>{
+    products = s.val() || [];
+    render();
 });
 
-function deleteSale(firebaseKey, productId, quantity) {
-
-    if (!confirm("Supprimer cette vente ?")) {
-        return;
-    }
-
-    const productIndex = products.findIndex(p => p.id === productId);
-
-    if (productIndex === -1) {
-
-        alert("Produit introuvable !");
-        return;
-
-    }
-
-    products[productIndex].qty += quantity;
-
-    db.ref('products').set(products)
-
-        .then(() => {
-
-            return db.ref('sales/' + firebaseKey).remove();
-
-        })
-
-        .then(() => {
-
-            alert("Vente supprimée ✅");
-
-        })
-
-        .catch(error => {
-
-            alert(error.message);
-
-        });
+db.ref("sales").on("value",s=>{
+    let data = s.val() || {};
+    sales = Object.keys(data).map(k=>({...data[k],key:k}));
+    render();
+});
 
 }
 
-function resetInventoryToDefault() {
+// ➕ ADD SALE
+function addSale(){
 
-    if (!confirm("Réinitialiser tout ?")) return;
+let id = productSelect.value;
+let p = products.find(x=>x.id==id);
+let q = Number(qty.value);
+let price = Number(price.value);
 
-    products = JSON.parse(JSON.stringify(defaultProducts));
+if(!p || q>p.qty) return alert("Stock insuffisant");
 
-    db.ref('products').set(products);
+p.qty -= q;
 
-    db.ref('sales').remove();
+let sale = {
+    date:new Date().toISOString().split("T")[0],
+    productName:p.name,
+    qty:q,
+    ca:price*q,
+    profit:(price-p.pu)*q
+};
 
+db.ref("products").set(products);
+db.ref("sales").push(sale);
+
+}
+
+// 📊 RENDER
+function render(){
+
+// STOCK
+let t = "<tr><th>Produit</th><th>Stock</th></tr>";
+products.forEach(p=>{
+    t += `<tr><td>${p.name}</td><td>${p.qty}</td></tr>`;
+    if(p.qty<=5) console.log("⚠ Stock faible",p.name);
+});
+stockTable.innerHTML = t;
+
+// SALES
+let s = "<tr><th>Date</th><th>Produit</th><th>Q</th><th>CA</th><th>Profit</th></tr>";
+sales.forEach(x=>{
+    s += `<tr>
+    <td>${x.date}</td>
+    <td>${x.productName}</td>
+    <td>${x.qty}</td>
+    <td>${x.ca}</td>
+    <td>${x.profit}</td>
+    </tr>`;
+});
+salesTable.innerHTML = s;
+
+// SELECT
+productSelect.innerHTML = products.map(p=>
+`<option value="${p.id}">${p.name}</option>`
+);
+
+// CHART
+let ctx = document.getElementById("chart");
+
+if(chart) chart.destroy();
+
+chart = new Chart(ctx,{
+    type:"line",
+    data:{
+        labels:sales.map(s=>s.date),
+        datasets:[{
+            label:"Profit",
+            data:sales.map(s=>s.profit)
+        }]
+    }
+});
+
+}
+
+// 📁 EXPORT EXCEL
+function exportExcel(){
+let wb = XLSX.utils.book_new();
+let ws = XLSX.utils.json_to_sheet(sales);
+XLSX.utils.book_append_sheet(wb,ws,"Sales");
+XLSX.writeFile(wb,"sales.xlsx");
+}
+
+// 📄 EXPORT PDF
+function exportPDF(){
+const { jsPDF } = window.jspdf;
+let doc = new jsPDF();
+doc.text("Sales Report",10,10);
+
+let y=20;
+sales.forEach(s=>{
+    doc.text(`${s.date} ${s.productName} ${s.profit}`,10,y);
+    y+=10;
+});
+
+doc.save("report.pdf");
 }
 
 </script>
